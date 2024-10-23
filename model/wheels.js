@@ -9,6 +9,7 @@ const wheelsSchema = new mongoose.Schema({
   vehicleImage: String,
   vehicleRegNumber: String,
   password: String,
+  rating: { type: Number, default: 4 },
 });
 
 export const Wheels = mongoose.model("wheels", wheelsSchema);

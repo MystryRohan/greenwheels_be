@@ -3,6 +3,7 @@ import { Booking } from "../model/bookings.js";
 import bcrypt from "bcrypt";
 import { createToken } from "../utils/utils.js";
 import { RentWheels } from "../model/rent.js";
+import { Wheels } from "../model/wheels.js";
 
 export const registerUser = async (req, res) => {
   const { name, email, phone, password, address } = req.body;
@@ -49,7 +50,7 @@ export const loginUser = async (req, res) => {
 };
 
 export const userProfile = (req, res) => {
-  res.json({ success: true, user: req.user });
+  return res.json({ success: true, user: req.user });
 };
 export const updateProfile = async (req, res) => {
   try {
@@ -79,11 +80,71 @@ export const bookRide = async (req, res) => {
     user: req.user,
     createdAt: new Date(Date.now()),
   });
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Finding you wheels...",
+    id: booking._id,
   });
 };
+
+export const isRideAccepted = async (req, res) => {
+  try {
+    // console.log("req.params:", req.params);
+    const { id } = req.params;
+
+    // console.log(id);
+    const rideAccepted = await Booking.findById(id);
+    // console.log(rideAccepted);
+    if (rideAccepted.acceptedBy !== null) {
+      return res.json({
+        success: true,
+        message: rideAccepted,
+      });
+    }
+    return res.json({
+      success: false,
+      message: "No Wheels Available",
+    });
+  } catch (e) {
+    console.log("finding");
+    return res.json({ success: false, message: e });
+  }
+};
+export const getDriver = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const driver = await Wheels.findById(id);
+    return res.json({ success: true, message: driver });
+  } catch (e) {
+    return res.json({ success: false, message: "" });
+  }
+};
+
+const getPaginatedData = async (req, page) => {
+  let perPage = 5;
+  return await Booking.find({ user: req.user })
+    .sort({ createdAt: "descending" })
+    .lean()
+    .limit(perPage)
+    .skip(page * perPage);
+};
+
+export const myfares = async (req, res) => {
+  try {
+    const id = req.user._id.toString();
+    let page = req.query.page;
+
+    const data = await getPaginatedData(req, page);
+    // console.log(data);
+    return res.json({
+      success: true,
+      message: data,
+    });
+  } catch (e) {
+    return console.log("err", e);
+  }
+};
+
 export const rentRide = async (req, res) => {
   const {
     email,
@@ -102,7 +163,7 @@ export const rentRide = async (req, res) => {
       vehicleImage,
       vehicaleRegNumber,
     });
-    res.json({
+    return res.json({
       success: true,
       message: "Wheels added successfully for rental...",
     });

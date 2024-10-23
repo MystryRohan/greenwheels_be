@@ -85,7 +85,7 @@ export const acceptFare = async (req, res) => {
     });
   }
   booking.acceptedBy = req.wheels._id;
-  booking.accpetedAt = new Date(Date.now());
+  booking.acceptedAt = new Date(Date.now());
   await booking.save();
   res.status(200).json({
     success: true,
@@ -110,6 +110,7 @@ export const rejectFare = async (req, res) => {
     message: "Fare Rejected",
   });
 };
+
 export const getWheelsAvailableForRent = async (req, res) => {
   const wheels = await RentWheels.find();
   return res.status(200).json({ success: true, cars: wheels });
